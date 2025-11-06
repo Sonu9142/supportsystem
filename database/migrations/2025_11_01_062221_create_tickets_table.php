@@ -6,25 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id'); // User submitting the ticket
-            $table->string('subject');
+            $table->string('ticketId')->unique();
+            $table->string('issueCategory');
+            $table->string('services');
+            $table->string('title');
             $table->text('description');
-            $table->enum('priority', ['low','medium','high'])->default('medium');
-            $table->enum('status', ['open','in_progress','on_hold','resolved','closed'])->default('open');
-            $table->unsignedBigInteger('category_id')->nullable();
-            $table->unsignedBigInteger('assigned_to')->nullable(); // Agent/admin
+            $table->string('transactionId')->nullable();
+            $table->string('filePath')->nullable();
             $table->timestamps();
-
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
-            $table->foreign('assigned_to')->references('id')->on('users')->onDelete('set null');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('tickets');

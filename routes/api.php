@@ -34,12 +34,14 @@ Route::delete('categories/{id}', [CategoryController::class, 'destroy']); // Del
 
 // Route::apiResource('tickets', TicketController::class);
 
-Route::get('tickets', [TicketController::class, 'index']);           // List all tickets
-Route::get('tickets/{id}', [TicketController::class, 'show']);       // Show a single ticket
-Route::post('tickets', [TicketController::class, 'store']);          // Create a new ticket
-Route::put('tickets/{id}', [TicketController::class, 'update']);     // Update an existing ticket
-Route::delete('tickets/{id}', [TicketController::class, 'destroy']); // Delete a ticket
-Route::get('tickets/{id}/details', [TicketController::class, 'details']); //tickets details
+// Route::get('tickets', [TicketController::class, 'index']);           // List all tickets
+// Route::get('tickets/{id}', [TicketController::class, 'show']);       // Show a single ticket
+// Route::post('tickets', [TicketController::class, 'store']);          // Create a new ticket
+// Route::put('tickets/{id}', [TicketController::class, 'update']);     // Update an existing ticket
+// Route::delete('tickets/{id}', [TicketController::class, 'destroy']); // Delete a ticket
+// Route::get('tickets/{id}/details', [TicketController::class, 'details']); //tickets details
+
+Route::post('/ticket', [TicketController::class, 'store']);
 
 
 Route::get('/zoho/login', [ZohoController::class, 'redirectToZoho']);

@@ -1,80 +1,78 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Ticket;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class TicketController extends Controller
 {
-    public function index()
-    {
-        return response()->json(Ticket::with(['user', 'category', 'assignee'])->get());
-    }
-
-    public function show($id)
-    {
-        return response()->json(Ticket::with(['user', 'category', 'assignee'])->findOrFail($id));
-    }
-
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'subject' => 'required|string|max:255',
-            'description' => 'required|string',
-            'priority' => 'required|in:low,medium,high',
-            'status' => 'in:open,in_progress,on_hold,resolved,closed',
-            'category_id' => 'nullable|exists:categories,id',
-            'assigned_to' => 'nullable|exists:users,id',
+        // 1. Validation
+        $validator = Validator::make($request->all(), [
+            'ticketId'        => 'required|string|unique:tickets',
+            'issueCategory'   => 'required|string|in:Transaction,Non-Transactional',
+            'services'        => 'required|string',
+            'title'           => 'required|string|max:255',
+            'description'     => 'required|string',
+            'transactionId'   => 'required_if:issueCategory,Transaction|string|nullable',
+            'fileUpload'      => 'required_if:issueCategory,Non-Transactional|image|mimes:jpeg,png,jpg|max:2048|nullable',
         ]);
-        $ticket = Ticket::create($validated);
 
-        return response()->json($ticket, 201);
-    }
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
 
-    public function update(Request $request, $id)
-    {
-        $ticket = Ticket::findOrFail($id);
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'subject' => 'required|string|max:255',
-            'description' => 'required|string',
-            'priority' => 'required|in:low,medium,high',
-            'status' => 'in:open,in_progress,on_hold,resolved,closed',
-            'category_id' => 'nullable|exists:categories,id',
-            'assigned_to' => 'nullable|exists:users,id',
-        ]);
-        $ticket->update($validated);
+        $filePath = null;
 
-        return response()->json($ticket);
-    }
+        // 2. Handle File Upload
+        if ($request->hasFile('fileUpload')) {
+            try {
+                // Store uploaded file in storage/app/public/screenshots
+                $path = $request->file('fileUpload')->store('screenshots', 'public');
+                $filePath = $path;
+            } catch (\Exception $e) {
+                Log::error('File upload failed: ' . $e->getMessage());
+                return response()->json([
+                    'message' => 'File upload failed, please try again.',
+                ], 500);
+            }
+        }
 
-    public function details($id)
-    {
-        $ticket = Ticket::with(['user', 'category', 'assignee'])->findOrFail($id);
-
-        $details = [
-            'id' => $ticket->id,
-            'subject' => $ticket->subject,
-            'description' => $ticket->description,
-            'priority' => $ticket->priority,
-            'status' => $ticket->status,
-            'created_at' => $ticket->created_at,
-            'updated_at' => $ticket->updated_at,
-            'user' => $ticket->user,
-            'category' => $ticket->category,
-            'assignee' => $ticket->assignee,
+        // 3. Sanitize Input Data
+        $sanitizedData = [
+            'ticketId'      => $request->ticketId,
+            'issueCategory' => $request->issueCategory,
+            'services'      => $request->services,
+            'title'         => strip_tags($request->title),
+            'description'   => strip_tags($request->description),
+            'transactionId' => $request->transactionId,
+            'filePath'      => $filePath,
         ];
 
-        return response()->json($details);
-    }
-
-
-    public function destroy($id)
-    {
-        Ticket::findOrFail($id)->delete();
-        return response()->json(['message' => 'Ticket deleted']);
+        // 4. Create Ticket in Database
+        try {
+            $ticket = Ticket::create($sanitizedData);
+            return response()->json([
+                'message' => 'Ticket created successfully!',
+                'data'    => $ticket
+            ], 201);
+        } catch (\Exception $e) {
+            Log::error('Database save failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred while saving the ticket.',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
 }
