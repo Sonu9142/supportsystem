@@ -10,12 +10,22 @@ class Ticket extends Model
     use HasFactory;
 
     protected $fillable = [
-        'ticketId',
-        'issueCategory',
+        'ticket_id',
+        'issue_category',
         'services',
         'title',
         'description',
-        'transactionId',
-        'filePath',
+        'transaction_id',
+        'file_path',
+        'assigned_to',
+        'acknowledged',
+        'acknowledged_at',
+        'assigned_at',
+        'status'
     ];
+
+    public function developer()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
 }

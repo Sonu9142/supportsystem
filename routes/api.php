@@ -16,11 +16,13 @@ Route::get('/user', function (Request $request) {
 // });
 
 // Route::apiResource('users', UserController::class);
-Route::get('users', [UserController::class, 'index']);           // List all users
-Route::get('users/{id}', [UserController::class, 'show']);       // Show a single user
-Route::post('users', [UserController::class, 'store']);          // Create a new user
-Route::put('users/{id}', [UserController::class, 'update']);     // Update an existing user
-Route::delete('users/{id}', [UserController::class, 'destroy']); // Delete a user
+Route::get('users', [UserController::class, 'index']);
+Route::get('users/{id}', [UserController::class, 'show']);
+Route::post('users', [UserController::class, 'store']);
+Route::put('users/{id}', [UserController::class, 'update']);
+Route::delete('users/{id}', [UserController::class, 'destroy']);
+
+
 
 
 // Route::apiResource('categories', CategoryController::class);
@@ -41,7 +43,13 @@ Route::delete('categories/{id}', [CategoryController::class, 'destroy']); // Del
 // Route::delete('tickets/{id}', [TicketController::class, 'destroy']); // Delete a ticket
 // Route::get('tickets/{id}/details', [TicketController::class, 'details']); //tickets details
 
-Route::post('/ticket', [TicketController::class, 'store']);
+Route::post('tickets', [TicketController::class, 'store']);
+Route::get('tickets', [TicketController::class, 'getAllTickets']);
+Route::put('tickets/{id}', [TicketController::class, 'updateTicket']);
+Route::post('tickets/{id}/acknowledge', [TicketController::class, 'acknowledge']);
+
+
+
 
 
 Route::get('/zoho/login', [ZohoController::class, 'redirectToZoho']);
