@@ -14,6 +14,8 @@ class TicketController extends Controller
 {
     public function store(Request $request)
     {
+        Log::info('Incoming Ticket Request:', $request->all());
+
         $validator = Validator::make($request->all(), [
             'issueCategory' => 'required|in:transactional,non-transactional',
             'services' => 'required|string',
