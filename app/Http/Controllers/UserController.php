@@ -120,4 +120,35 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Logout successful']);
     }
+
+
+    public function createDeveloper(Request $request)
+{
+    if ($request->user()->role !== 'admin') {
+        return response()->json(['message' => 'Access denied. Only admin can create developers.'], 403);
+    }
+
+    $validated = $request->validate([
+        'name' => 'required|string|max:60',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|string|min:6',
+        'is_active' => 'boolean'
+    ]);
+
+    $developer = User::create([
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'password' => bcrypt($validated['password']),
+        'role' => 'developer',
+        'is_active' => $validated['is_active'] ?? true,
+    ]);
+
+    return response()->json([
+        'message' => 'Developer created successfully!',
+        'developer' => $developer
+    ], 201);
 }
+
+}
+
+

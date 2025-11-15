@@ -131,4 +131,36 @@ class TicketController extends Controller
 
         return response()->json(['message' => 'Ticket acknowledged successfully!']);
     }
+
+
+    public function assignTicket(Request $request, $id)
+{
+    $ticket = Ticket::findOrFail($id);
+
+    $validated = $request->validate([
+        'developer_id' => 'required|exists:users,id'
+    ]);
+
+    $developer = User::where('id', $validated['developer_id'])
+        ->where('role', 'developer')
+        ->where('is_active', true)
+        ->first();
+
+    if (!$developer) {
+        return response()->json(['message' => 'Developer not found or inactive.'], 404);
+    }
+
+    $ticket->update([
+        'assigned_to' => $developer->id,
+        'assigned_at' => now(),
+        'status' => 'reassigned'
+    ]);
+
+    return response()->json([
+        'message' => 'Ticket reassigned successfully!',
+        'ticket' => $ticket,
+        'assigned_to' => $developer->name
+    ]);
+}
+
 }
